@@ -4,5 +4,7 @@ A repository which maps all the college tennis programs and makes it easier for 
 ## The Roadman
 
 Data Collection  ☑️ 
+
 Database Modeling  ☑️ 
+
 Application Development ❌
