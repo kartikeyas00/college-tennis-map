@@ -1,4 +1,4 @@
-# college-tennis-map
+# Mapping College Tennis Programs
 A repository which maps all the college tennis programs and makes it easier for you to find them.
 
 ## The Roadman
