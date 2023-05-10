@@ -8,3 +8,6 @@ Data Collection  ☑️
 Database Modeling  ☑️ 
 
 Application Development ❌
+  
+  1. Flask API (Backend) ☑️
+  2. Frontend ☑️
