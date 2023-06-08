@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>College Map</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+
+  <style>
+    body, html {
+      height: 100%;
+      margin: 0;
+    }
+
+    #map {
+      height: 100%;
+    }
+
+    .custom-popup {
+      max-width: 500px;
+      padding: 10px;
+      border-radius: 5px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+      background-color: #fff;
+    }
+
+    .custom-popup h3 {
+      margin: 0 0 10px;
+    }
+
+    .custom-popup p {
+      margin: 0;
+    }
+
+    .custom-popup a {
+      display: block;
+      margin-top: 5px;
+    }
+
+    .filter {
+        position: absolute;
+      top: 50px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1000;
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+
+  <div class="filter">
+    <div class="btn-group" role="group">
+      <input type="radio" class="btn-check" name="gender" id="maleRadio" value="Male" checked>
+      <label class="btn btn-outline-primary" for="maleRadio">Male</label>
+      
+      <input type="radio" class="btn-check" name="gender" id="femaleRadio" value="Female">
+      <label class="btn btn-outline-primary" for="femaleRadio">Female</label>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+  <script src="https://use.fontawesome.com/7f63dee142.js"></script>
+  <script>
+    var map = L.map('map').setView([37.8, -96], 4);
+    var colleges = null;
+    var customIcon = L.icon({
+          iconUrl: 'marker-icon.png',  // Replace with your custom marker icon URL
+          iconSize: [25, 41],
+          iconAnchor: [12, 41],
+          popupAnchor: [0, -41]
+        });
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors',
+      maxZoom: 18,
+    }).addTo(map);
+
+    fetch('http://127.0.0.1:8000/getCollegeDetails.php')
+      .then(response => response.json())
+      .then(data => {
+         colleges = data.data;
+
+      
+
+        colleges.forEach(college => {
+          if (college.gender === getSelectedGender()) {
+            var latLng = college.latLong.split(',');
+            var marker = L.marker([parseFloat(latLng[0]), parseFloat(latLng[1])], { icon: customIcon })
+              .addTo(map);
+
+            marker.bindPopup(getPopupContent(college), { className: 'custom-popup' });
+          }
+        });
+      })
+      .catch(error => console.error('Error:', error));
+
+    function getSelectedGender() {
+      var genderRadioButtons = document.getElementsByName('gender');
+      for (var i = 0; i < genderRadioButtons.length; i++) {
+        if (genderRadioButtons[i].checked) {
+          return genderRadioButtons[i].value;
+        }
+      }
+      return '';
+    }
+
+    function getPopupContent(college) {
+  return `
+    <h3>${college.name}</h3>
+    <table class="table table-striped">
+      <tbody>
+        <tr>
+          <th>Division</th>
+          <td>${college.division}</td>
+        </tr>
+        <tr>
+          <th>Gender</th>
+          <td>${college.gender}</td>
+        </tr>
+        <tr>
+          <th>Conference</th>
+          <td>${college.conference}</td>
+        </tr>
+        <tr>
+          <th>City</th>
+          <td>${college.city}</td>
+        </tr>
+        <tr>
+          <th>State</th>
+          <td>${college.state}</td>
+        </tr>
+        <tr>
+          <th>URL</th>
+          <td><a href="${college.team_url}"><i class="fa fa-link"></a></td>
+        </tr>
+        <tr>
+          <th>Twitter</th>
+          <td><a href="${college.twitter_link}"><i class="fa fa-twitter"></i></a></td>
+        </tr>
+        <tr>
+          <th>Facebook</th>
+          <td><a href="${college.facebook_link}"><i class="fa fa-facebook"></i></a></td>
+        </tr>
+        <tr>
+          <th>Instagram</th>
+          <td><a href="${college.instagram_link}"><i class="fa fa-instagram"></i></a></td>
+        </tr>
+      </tbody>
+    </table>
+  `;
+}
+
+
+    var genderFilter = document.getElementsByName('gender');
+    for (var i = 0; i < genderFilter.length; i++) {
+      genderFilter[i].addEventListener('change', function() {
+        map.eachLayer(function(layer) {
+          if (layer instanceof L.Marker) {
+            map.removeLayer(layer);
+          }
+        });
+
+        colleges.forEach(college => {
+          if (college.gender === getSelectedGender()) {
+            var latLng = college.latLong.split(',');
+            var marker = L.marker([parseFloat(latLng[0]), parseFloat(latLng[1])], { icon: customIcon })
+              .addTo(map);
+            marker.bindPopup(getPopupContent(college), { className: 'custom-popup' });
+          }
+        });
+      });
+    }
+  </script>
+</body>
+</html>
